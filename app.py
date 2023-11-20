@@ -6,14 +6,18 @@ import joblib
 import os
 
 
-df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminder_unfiltered.csv')
-dir = 'C:\\Users\\Harrison Nguyen\\Documents\\CardiacCovidModel\\stemi\\'
 
-df_template = pd.read_csv(os.path.join(dir,'app\\dataframe_template.csv'),index_col=0)
+#dir = 'C:\\Users\\Harrison Nguyen\\Documents\\CardiacCovidModel\\stemi\\'
+#df_template = pd.read_csv(os.path.join(dir,'app\\dataframe_template.csv'),index_col=0)
+#icu_pipe = joblib.load(os.path.join(dir,"model\\elasticnet_feature_selection5_oversample_ICU admission_sigmoid_calibration.pickle"))
+#mortality_pipe = joblib.load(os.path.join(dir,"model\\elasticnet_feature_selection5_oversample_In-Hospital Mortality_isotonic_calibration.pickle"))
+#lvef_pipe = joblib.load(os.path.join(dir,"model\\elasticnet_feature_selection5_oversample_lvef_abnormal_sigmoid_calibration.pickle"))
 
-icu_pipe = joblib.load(os.path.join(dir,"model\\elasticnet_feature_selection5_oversample_ICU admission_sigmoid_calibration.pickle"))
-mortality_pipe = joblib.load(os.path.join(dir,"model\\elasticnet_feature_selection5_oversample_In-Hospital Mortality_isotonic_calibration.pickle"))
-lvef_pipe = joblib.load(os.path.join(dir,"model\\elasticnet_feature_selection5_oversample_lvef_abnormal_sigmoid_calibration.pickle"))
+df_template = pd.read_csv('dataframe_template.csv',index_col=0)
+
+icu_pipe = joblib.load("model\\elasticnet_feature_selection5_oversample_ICU admission_sigmoid_calibration.pickle")
+mortality_pipe = joblib.load("model\\elasticnet_feature_selection5_oversample_In-Hospital Mortality_isotonic_calibration.pickle")
+lvef_pipe = joblib.load("model\\elasticnet_feature_selection5_oversample_lvef_abnormal_sigmoid_calibration.pickle")
 
 app = Dash(external_stylesheets=[dbc.themes.LUMEN,dbc.icons.FONT_AWESOME])
 MIN_AGE = 18
@@ -222,12 +226,13 @@ offcanvas = html.Div(
                 ),
                 html.P(
                     [
-                        "Paper  ", html.A("link", href="https://www.twitter.com/",)
+                        "Paper  ", html.A("link", href="https://github.com/harrisonnguyen/",)
                     ]
                 ),
                 html.P(
                     [
-                        "Code  ", html.A("link", href="https://www.twitter.com/",)
+                        "Code of the metholody and application can be found on ", 
+                        html.A("github", href="https://github.com/harrisonnguyen/stemi_risk_prediction")
                     ]
                 )
                 ],
