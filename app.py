@@ -13,11 +13,11 @@ import os
 #mortality_pipe = joblib.load(os.path.join(dir,"model\\elasticnet_feature_selection5_oversample_In-Hospital Mortality_isotonic_calibration.pickle"))
 #lvef_pipe = joblib.load(os.path.join(dir,"model\\elasticnet_feature_selection5_oversample_lvef_abnormal_sigmoid_calibration.pickle"))
 
-#df_template = pd.read_csv('dataframe_template.csv',index_col=0)
+df_template = pd.read_csv('dataframe_template.csv',index_col=0)
 
-#icu_pipe = joblib.load("assets/elasticnet_feature_selection5_oversample_ICU admission_sigmoid_calibration.pickle")
-#mortality_pipe = joblib.load("assets/elasticnet_feature_selection5_oversample_In-Hospital Mortality_isotonic_calibration.pickle")
-#lvef_pipe = joblib.load("assets/elasticnet_feature_selection5_oversample_lvef_abnormal_sigmoid_calibration.pickle")
+icu_pipe = joblib.load("model/elasticnet_feature_selection5_oversample_ICU admission_sigmoid_calibration.pickle")
+mortality_pipe = joblib.load("model/elasticnet_feature_selection5_oversample_In-Hospital Mortality_isotonic_calibration.pickle")
+lvef_pipe = joblib.load("model/elasticnet_feature_selection5_oversample_lvef_abnormal_sigmoid_calibration.pickle")
 
 app = Dash(external_stylesheets=[dbc.themes.LUMEN,dbc.icons.FONT_AWESOME])
 
