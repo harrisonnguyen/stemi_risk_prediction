@@ -20,6 +20,9 @@ import os
 #lvef_pipe = joblib.load("assets/elasticnet_feature_selection5_oversample_lvef_abnormal_sigmoid_calibration.pickle")
 
 app = Dash(external_stylesheets=[dbc.themes.LUMEN,dbc.icons.FONT_AWESOME])
+
+server = app.server
+
 MIN_AGE = 18
 MAX_AGE = 105
 MIN_HR = 30
