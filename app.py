@@ -24,18 +24,18 @@ app = Dash(external_stylesheets=[dbc.themes.LUMEN,dbc.icons.FONT_AWESOME])
 server = app.server
 
 MIN_AGE = 18
-MAX_AGE = 105
+MAX_AGE = 100
 MIN_HR = 30
-MAX_HR = 180
+MAX_HR = 170
 MIN_SBP = 30
-MAX_SBP = 180
+MAX_SBP = 230
 
 
 controls = dbc.Card(
     [
         dbc.Row(
             [
-                dbc.Label("Age",class_name="bold", width=3),
+                dbc.Label("Age (years)",class_name="bold", width=5),
                 dbc.Col(
                     [dbc.Input(
                         id='age-input', 
@@ -50,11 +50,11 @@ controls = dbc.Card(
                 #),
                 ]),
             ],
-            className='mb-3'
+            className='mb-2'
         ),
         dbc.Row(
             [
-                dbc.Label("Starting HR", width=3),
+                dbc.Label("Starting heart rate (bpm)", width=5),
                 dbc.Col(
                     dbc.Input(
                         id='hr-input', 
@@ -64,11 +64,11 @@ controls = dbc.Card(
                         #min=30
                 )),
             ],
-            className='mb-3'
+            className='mb-2'
         ),
         dbc.Row(
             [
-                dbc.Label("Starting SBP", width=3),
+                dbc.Label("Starting systolic blood pressure (mmHg)", width=5),
                 dbc.Col(
                     dbc.Input(
                         id='sbp-input', 
@@ -78,11 +78,20 @@ controls = dbc.Card(
                         #min=30
                 )),
             ],
-            className='mb-3'
+            className='mb-2'
         ),
         dbc.Row(
             [
-                dbc.Label("Culprit Vessel", width=5),
+                dbc.Label(
+                    html.Span("Culprit vessel",id="tooltip-target",style={"textDecoration": "underline", "cursor": "help",'text-decoration-style': 'dotted','text-underline-offset':'0.3rem'}), 
+                    width=5,color='primary'),
+                dbc.Tooltip(html.P([
+                    html.Span("RCA = right coronary artery"),
+                    html.Br(),
+                    html.Span("LCx = left circumflex artery"), 
+                    html.Br(),
+                    html.Span("LAD = left anterior descending artery")]),
+                    target="tooltip-target"),
                 dbc.RadioItems(
                     id='ccv-input',
                     options=['RCA', 'LCx', 'LAD'], 
@@ -95,7 +104,7 @@ controls = dbc.Card(
         
         html.Div(
             [
-                dbc.Label('Smoking History'),
+                dbc.Label('Smoking history'),
                 dbc.RadioItems(
                     id='smoking-input',
                     options=['Never', 'Ex-', 'Current'], 
@@ -107,7 +116,8 @@ controls = dbc.Card(
         ),
         html.Div(
             [
-                dbc.Label('TIMI pre-flow'),
+                dbc.Label(
+                    'TIMI flow at onset of angiography'),
                 dbc.RadioItems(
                     id='timi-preflow-input',
                     options = ['0', '1', '2','3'],
@@ -119,33 +129,41 @@ controls = dbc.Card(
         ),
         html.Div(
             [
-                dbc.Label('Presence of Rentrop'),
+                dbc.Label(html.Span('Robust collateral recruitment',
+                    id="rentrop-tooltip-target",
+                    style={"textDecoration": "underline", "cursor": "help",'text-decoration-style': 'dotted','text-underline-offset':'0.3rem'}),
+                    color='primary'),
+                dbc.Tooltip(html.P([
+                    html.Span("Robust collateral recruitment is Rentrop grade 2 or 3"),
+                    html.Br(),
+                    html.Span("Poor collateral recruitment is defined as Rentrop grade 0 or 1")]),
+                    target="rentrop-tooltip-target"),
                 dbc.Switch(
                     id='rentrop-input',
                     value=False,
                 ),
             ],
-            className='mb-3'
+            className='mb-2'
         ),
         html.Div(
             [
-                dbc.Label('Pre-hospital Arrest'),
+                dbc.Label('Pre-hospital arrest'),
                 dbc.Switch(
                     id='prehospital-input',
                     value=False,
                 ),
             ],
-            className='mb-3'
+            className='mb-2'
         ),
         html.Div(
             [
-                dbc.Label('Family history of xxx'),
+                dbc.Label('Family history of coronary disease before 50 years'),
                 dbc.Switch(
                     id="familyhistory-input",
                     value=False,
                 )
             ],
-            className='mb-3'
+            className='mb-2'
         ),
         html.Div(
             [
@@ -155,7 +173,7 @@ controls = dbc.Card(
                     value=False,
                 )
             ],
-            className='mb-3'
+            className='mb-2'
         ),
         html.Hr(),
         html.Div(
@@ -251,7 +269,7 @@ navbar = dbc.NavbarSimple(
     children=[
         offcanvas
     ],
-    brand="Risk Prediction",
+    brand="STEMI-ML Risk Score",
     color="primary",
     dark=True,
     class_name='mb-3',
