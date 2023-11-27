@@ -29,6 +29,7 @@ MIN_HR = 30
 MAX_HR = 170
 MIN_SBP = 30
 MAX_SBP = 230
+PROGRESS_BAR_MIN_VALUE = 4
 
 
 controls = dbc.Card(
@@ -192,7 +193,7 @@ icu_result = dbc.Card(
         [
             html.H6("ICU Admission", className="card-subtitle mb-2"),
             dbc.Progress(
-                value=5, id="icu-prob", animated=True, striped=True,style={"height": "20px"}, color='primary'
+                value=PROGRESS_BAR_MIN_VALUE, id="icu-prob", animated=True, striped=True,style={"height": "20px"}, color='primary'
             )
         ]
     ),
@@ -204,7 +205,7 @@ mortality_result = dbc.Card(
         [
             html.H6("In-Hospital Mortality", className="card-subtitle mb-2"),
             dbc.Progress(
-                value=5, id="mortality-prob", animated=True, striped=True,style={"height": "20px"}, color='primary'
+                value=PROGRESS_BAR_MIN_VALUE, id="mortality-prob", animated=True, striped=True,style={"height": "20px"}, color='primary'
             )
         ]
     ),
@@ -217,7 +218,7 @@ lvef_result = dbc.Card(
         [
             html.H6("LVEF < 40%", className="card-subtitle mb-2"),
             dbc.Progress(
-                value=5, id="lvef-prob", animated=True, striped=True,style={"height": "20px"}, color='primary'
+                value=PROGRESS_BAR_MIN_VALUE, id="lvef-prob", animated=True, striped=True,style={"height": "20px"}, color='primary'
             )
         ]
     ),
@@ -284,11 +285,11 @@ app.layout = html.Div(
         navbar,
         dbc.Row(
             [
-                dbc.Col(md=1),
-                dbc.Col(controls, md=4),
+                dbc.Col(lg=1),
+                dbc.Col(controls, lg=5),
                 dbc.Col([
                     risk_score
-                ], md=4),
+                ], lg=5),
                 #dbc.Col(dcc.Graph(id='graph-content'), md=4)
 
             ],
@@ -298,12 +299,12 @@ app.layout = html.Div(
         
 
     ],
-    fluid='md',
+    fluid='sm',
     ),
     dbc.Container([
     dbc.Row(
             [
-                dbc.Col(dbc.Table(id='table-content', striped=True, bordered=True, hover=True), md=12),
+                dbc.Col(dbc.Table(id='table-content', striped=True, bordered=True, hover=True), lg=12),
             ],
             align="center",
         )
@@ -343,11 +344,11 @@ def predict_risk(n_clicks,age,ccv,hr,sbp,smoking,timi,rentrop,prehospital,family
 
     if check_age_validity(age) or  check_hr_validity(hr) or  check_sbp_validity(sbp):
         return (
-            5,
+            PROGRESS_BAR_MIN_VALUE,
             "",
-            5,
+            PROGRESS_BAR_MIN_VALUE,
             "",
-            5,
+            PROGRESS_BAR_MIN_VALUE,
             ""
     )
 
@@ -418,6 +419,14 @@ def predict_risk(n_clicks,age,ccv,hr,sbp,smoking,timi,rentrop,prehospital,family
 
     lvef_pred = round(lvef_pipe.predict_proba(df_template)[0,1],2)
     lvef_prob = "{:.0%}".format(lvef_pred)
+
+    if icu_pred < PROGRESS_BAR_MIN_VALUE/100:
+        icu_pred = PROGRESS_BAR_MIN_VALUE/100
+    if mortality_pred < PROGRESS_BAR_MIN_VALUE/100:
+        mortality_pred = PROGRESS_BAR_MIN_VALUE/100
+    if lvef_pred < PROGRESS_BAR_MIN_VALUE/100:
+        lvef_pred = PROGRESS_BAR_MIN_VALUE/100
+
 
     return (
         #dbc.Table.from_dataframe(df_template),
