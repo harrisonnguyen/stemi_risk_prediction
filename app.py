@@ -244,17 +244,22 @@ offcanvas = html.Div(
         dbc.Offcanvas(
             [
                 html.P(
-                    "Some description of the project. "
+                    """
+                        The STEMI-ML score is a machine-learning based risk prediction score for in-hospital mortality, 
+                        intensive care unit admission and left ventricular ejection fraction less than 40% in STEMI patients. 
+                        This score has been derived from a cohort of 1863 consecutive, STEMI patients at single, tertiary Australian centre who underwent 
+                        primary percutaneous coronary intervention or rescue percutaneous coronary intervention from 2010 to 2019.
+                    """
                 ),
-                html.P(
-                    [
-                        "Paper  ", html.A("link", href="https://github.com/harrisonnguyen/",)
-                    ]
-                ),
+                #html.P(
+                #    [
+                #        "This work is based on a paper found in this ", html.A("link", href="",)
+                #    ]
+                #),
                 html.P(
                     [
                         "Code of the metholody and application can be found on ", 
-                        html.A("github", href="https://github.com/harrisonnguyen/stemi_risk_prediction")
+                        html.A("github", href="https://github.com/harisritharan/stemi_risk_prediction")
                     ]
                 )
                 ],
