@@ -1,0 +1,14 @@
+# Exported from Render on 2024-06-10T12:09:09Z
+services:
+- type: web
+  name: stemi-risk-prediction
+  runtime: python
+  repo: https://github.com/harrisonnguyen/stemi_risk_prediction
+  plan: free
+  envVars:
+  - key: PYTHON_VERSION
+    sync: false
+  region: singapore
+  buildCommand: pip install -r requirements.txt
+  startCommand: gunicorn app:server
+version: "1"
