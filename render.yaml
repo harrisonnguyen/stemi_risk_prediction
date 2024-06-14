@@ -1,7 +1,7 @@
 # Exported from Render on 2024-06-10T12:09:09Z
 services:
 - type: web
-  name: stemi-risk-prediction
+  name: stemi-ml-score
   runtime: python
   repo: https://github.com/harrisonnguyen/stemi_risk_prediction
   plan: free
