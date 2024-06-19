@@ -258,7 +258,7 @@ offcanvas = html.Div(
                 #),
                 html.P(
                     [
-                        "Code of the metholody and application can be found on ", 
+                        "Code of the methodolody and application can be found on ", 
                         html.A("github", href="https://github.com/harisritharan/stemi_risk_prediction")
                     ]
                 )
