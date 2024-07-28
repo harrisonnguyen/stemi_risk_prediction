@@ -18,7 +18,7 @@ df_template = pd.read_csv('dataframe_template.csv',index_col=0)
 icu_pipe = joblib.load("model/elasticnet_feature_selection5_oversample_ICU admission_isotonic_calibration.pickle")
 mortality_pipe = joblib.load("model/elasticnet_feature_selection5_oversample_In-Hospital Mortality_isotonic_calibration.pickle")
 lvef_pipe = joblib.load("model/elasticnet_feature_selection5_oversample_lvef_abnormal_isotonic_calibration.pickle")
-mortality_year_pipe = joblib.load("model/elasticnet_feature_selection5_outcome_sigmoid_calibration.pickle")
+mortality_year_pipe = joblib.load("model/elasticnet_feature_selection5_Outcome_sigmoid_calibration.pickle")
 
 features_to_drop = ['LVEF FINAL','lvef_abnormal_1.0']
 
