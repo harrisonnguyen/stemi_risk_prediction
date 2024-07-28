@@ -18,6 +18,9 @@ df_template = pd.read_csv('dataframe_template.csv',index_col=0)
 icu_pipe = joblib.load("model/elasticnet_feature_selection5_oversample_ICU admission_isotonic_calibration.pickle")
 mortality_pipe = joblib.load("model/elasticnet_feature_selection5_oversample_In-Hospital Mortality_isotonic_calibration.pickle")
 lvef_pipe = joblib.load("model/elasticnet_feature_selection5_oversample_lvef_abnormal_isotonic_calibration.pickle")
+mortality_year_pipe = joblib.load("model/elasticnet_feature_selection5_outcome_sigmoid_calibration.pickle")
+
+features_to_drop = ['LVEF FINAL','lvef_abnormal_1.0']
 
 app = Dash(external_stylesheets=[dbc.themes.LUMEN,dbc.icons.FONT_AWESOME])
 
@@ -29,6 +32,8 @@ MIN_HR = 30
 MAX_HR = 170
 MIN_SBP = 30
 MAX_SBP = 230
+MIN_LVEF = 10
+MAX_LVEF = 60
 PROGRESS_BAR_MIN_VALUE = 4
 
 
@@ -75,6 +80,20 @@ controls = dbc.Card(
                         id='sbp-input', 
                         type='number',
                         placeholder="Between {}-{}".format(MIN_SBP,MAX_SBP),
+                        #max=180,
+                        #min=30
+                )),
+            ],
+            className='mb-2'
+        ),
+        dbc.Row(
+            [
+                dbc.Label("LVEF (%)", width=5),
+                dbc.Col(
+                    dbc.Input(
+                        id='lvef-input', 
+                        type='number',
+                        placeholder="Between {}-{}".format(MIN_LVEF,MAX_LVEF),
                         #max=180,
                         #min=30
                 )),
@@ -176,6 +195,16 @@ controls = dbc.Card(
             ],
             className='mb-2'
         ),
+        html.Div(
+            [
+                dbc.Label('Percutaneous transluminal coronary angioplasty'),
+                dbc.Switch(
+                    id='ptca-input',
+                    value=False,
+                )
+            ],
+            className='mb-2'
+        ),
         html.Hr(),
         html.Div(
             [
@@ -225,6 +254,18 @@ lvef_result = dbc.Card(
     className="mb-3"
 )
 
+mortality_year_result = dbc.Card(
+    dbc.CardBody(
+        [
+            html.H6("1 Year Mortality", className="card-subtitle mb-2"),
+            dbc.Progress(
+                value=PROGRESS_BAR_MIN_VALUE, id="mortality-year-prob", animated=True, striped=True,style={"height": "20px"}, color='primary'
+            )
+        ]
+    ),
+    className="mb-3"
+)
+
 risk_score = dbc.Card(
     [
         dbc.CardBody([
@@ -232,7 +273,8 @@ risk_score = dbc.Card(
             html.Hr(),
             mortality_result,
             icu_result,
-            lvef_result
+            lvef_result,
+            mortality_year_result
         ])
     ]
 )
@@ -328,27 +370,34 @@ app.layout = html.Div(
     Output('mortality-prob', 'label'),
     Output('lvef-prob', 'value'),
     Output('lvef-prob', 'label'),
+    Output('mortality-year-prob', 'value'),
+    Output('mortality-year-prob', 'label'),
     Input('example-button', 'n_clicks'),
     State('age-input', 'value'),
     State('ccv-input', 'value'),
     State('hr-input', 'value'),
     State('sbp-input', 'value'),
+    State('lvef-input', 'value'),
     State('smoking-input', 'value'),
     State('timi-preflow-input', 'value'),
     State('rentrop-input', 'value'),
     State('prehospital-input', 'value'),
     State('familyhistory-input', 'value'),
     State('hypercholesterolaemia-input', 'value'),
+    State('ptca-input', 'value'),
     prevent_initial_call=True
 )
-def predict_risk(n_clicks,age,ccv,hr,sbp,smoking,timi,rentrop,prehospital,family_hist,hyperchol):
+def predict_risk(n_clicks,age,ccv,hr,sbp,lvef,smoking,timi,rentrop,prehospital,family_hist,hyperchol,ptca):
     first_row = 0
     df_template.loc[first_row,'Age'] = age
     df_template.loc[first_row,'Starting HR'] = hr
     df_template.loc[first_row,'Starting SBP'] = sbp
+    df_template.loc[first_row,'LVEF FINAL'] = lvef
 
-    if check_age_validity(age) or  check_hr_validity(hr) or  check_sbp_validity(sbp):
+    if check_age_validity(age) or  check_hr_validity(hr) or  check_sbp_validity(sbp) or  check_lvef_validity(lvef):
         return (
+            PROGRESS_BAR_MIN_VALUE,
+            "",
             PROGRESS_BAR_MIN_VALUE,
             "",
             PROGRESS_BAR_MIN_VALUE,
@@ -415,15 +464,27 @@ def predict_risk(n_clicks,age,ccv,hr,sbp,smoking,timi,rentrop,prehospital,family
         df_template.loc[first_row, 'Hypercholesterolaemia_1.0'] = 1
     else:
         df_template.loc[first_row, 'Hypercholesterolaemia_1.0'] = 0
+    
+    if ptca:
+        df_template.loc[first_row, 'Coded Treatment (1 = PCI, 2 = PTCA, 3 = emergent CABG, 4 = med)_2.0'] = 1
+        df_template.loc[first_row, 'Coded Treatment (1 = PCI, 2 = PTCA, 3 = emergent CABG, 4 = med)_3.0'] = 0
+        df_template.loc[first_row, 'Coded Treatment (1 = PCI, 2 = PTCA, 3 = emergent CABG, 4 = med)_4.0'] = 0
+    else:
+        df_template.loc[first_row, 'Coded Treatment (1 = PCI, 2 = PTCA, 3 = emergent CABG, 4 = med)_2.0'] = 0
+        df_template.loc[first_row, 'Coded Treatment (1 = PCI, 2 = PTCA, 3 = emergent CABG, 4 = med)_3.0'] = 0
+        df_template.loc[first_row, 'Coded Treatment (1 = PCI, 2 = PTCA, 3 = emergent CABG, 4 = med)_4.0'] = 0
 
-    icu_pred = round(icu_pipe.predict_proba(df_template)[0,1],2)
+    icu_pred = round(icu_pipe.predict_proba(df_template.drop(features_to_drop,axis=1))[0,1],2)
     icu_prob = "{:.0%}".format(icu_pred)
 
-    mortality_pred = round(mortality_pipe.predict_proba(df_template)[0,1],2)
+    mortality_pred = round(mortality_pipe.predict_proba(df_template.drop(features_to_drop,axis=1))[0,1],2)
     mortality_prob = "{:.0%}".format(mortality_pred)
 
-    lvef_pred = round(lvef_pipe.predict_proba(df_template)[0,1],2)
+    lvef_pred = round(lvef_pipe.predict_proba(df_template.drop(features_to_drop,axis=1))[0,1],2)
     lvef_prob = "{:.0%}".format(lvef_pred)
+    
+    mortality_year_pred = round(mortality_year_pipe.predict_proba(df_template)[0,1],2)
+    mortality_year_prob = "{:.0%}".format(mortality_year_pred)
 
     if icu_pred < PROGRESS_BAR_MIN_VALUE/100:
         icu_pred = PROGRESS_BAR_MIN_VALUE/100
@@ -431,6 +492,13 @@ def predict_risk(n_clicks,age,ccv,hr,sbp,smoking,timi,rentrop,prehospital,family
         mortality_pred = PROGRESS_BAR_MIN_VALUE/100
     if lvef_pred < PROGRESS_BAR_MIN_VALUE/100:
         lvef_pred = PROGRESS_BAR_MIN_VALUE/100
+    if mortality_year_pred < PROGRESS_BAR_MIN_VALUE/100:
+        mortality_year_pred = PROGRESS_BAR_MIN_VALUE/100
+    print(icu_pred)
+    print(mortality_pred)
+    print(lvef_pred)
+    print(mortality_year_pred)
+    print(df_template[['Age','LVEF FINAL','Coded Treatment (1 = PCI, 2 = PTCA, 3 = emergent CABG, 4 = med)_2.0']])
 
 
     return (
@@ -440,7 +508,9 @@ def predict_risk(n_clicks,age,ccv,hr,sbp,smoking,timi,rentrop,prehospital,family
         mortality_pred*100,
         mortality_prob,
         lvef_pred*100,
-        lvef_prob
+        lvef_prob,
+        mortality_year_pred*100,
+        mortality_year_prob
     )
 
 
@@ -483,6 +553,16 @@ def check_hr_validity(value):
 def check_sbp_validity(value):
     if value:
         is_invalid = value < MIN_SBP or value > MAX_SBP
+        return is_invalid
+    return False
+    
+@app.callback(
+    Output("lvef-input", "invalid"),
+    Input("lvef-input", "value"),
+)
+def check_lvef_validity(value):
+    if value:
+        is_invalid = value < MIN_LVEF or value > MAX_LVEF
         return is_invalid
     return False
 
