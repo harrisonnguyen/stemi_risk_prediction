@@ -86,20 +86,7 @@ controls = dbc.Card(
             ],
             className='mb-2'
         ),
-        dbc.Row(
-            [
-                dbc.Label("LVEF (%)", width=5),
-                dbc.Col(
-                    dbc.Input(
-                        id='lvef-input', 
-                        type='number',
-                        placeholder="Between {}-{}".format(MIN_LVEF,MAX_LVEF),
-                        #max=180,
-                        #min=30
-                )),
-            ],
-            className='mb-2'
-        ),
+        
         dbc.Row(
             [
                 dbc.Label(
@@ -195,9 +182,23 @@ controls = dbc.Card(
             ],
             className='mb-2'
         ),
+        html.Hr(),
+        html.H5("For 1 year mortality only"),
+        dbc.Row(
+            [
+                dbc.Label("LVEF (%)", width=5),
+                dbc.Col(
+                    dbc.Input(
+                        id='lvef-input', 
+                        type='number',
+                        placeholder="Between {}-{}".format(MIN_LVEF,MAX_LVEF),
+                )),
+            ],
+            className='mb-2'
+        ),
         html.Div(
             [
-                dbc.Label('Percutaneous transluminal coronary angioplasty'),
+                dbc.Label('Balloon angioplasty'),
                 dbc.Switch(
                     id='ptca-input',
                     value=False,
@@ -220,10 +221,18 @@ controls = dbc.Card(
 icu_result = dbc.Card(
     dbc.CardBody(
         [
-            html.H6("ICU Admission", className="card-subtitle mb-2"),
+            dbc.Label(
+                html.Span("ICU Admission",
+                style={"textDecoration": "underline", "cursor": "help",'text-decoration-style': 'dotted','text-underline-offset':'0.3rem'}),
+                color='primary', 
+                className="card-subtitle mb-2 mt-0 pt-0",id="icu-tooltip-target",
+            ),
             dbc.Progress(
                 value=PROGRESS_BAR_MIN_VALUE, id="icu-prob", animated=True, striped=True,style={"height": "20px"}, color='primary'
-            )
+            ),
+            dbc.Tooltip(html.P([
+                    html.Span("Intensive care unit admission during index presentation.")]),
+                    target="icu-tooltip-target"),
         ]
     ),
     className="mb-3"
@@ -245,10 +254,18 @@ mortality_result = dbc.Card(
 lvef_result = dbc.Card(
     dbc.CardBody(
         [
-            html.H6("LVEF < 40%", className="card-subtitle mb-2"),
+            dbc.Label(
+                html.Span("LVEF < 40%",
+                style={"textDecoration": "underline", "cursor": "help",'text-decoration-style': 'dotted','text-underline-offset':'0.3rem'}),
+                color='primary', 
+                className="card-subtitle mb-2 mt-0 pt-0",id="lvef-pred-tooltip-target",
+            ),
             dbc.Progress(
                 value=PROGRESS_BAR_MIN_VALUE, id="lvef-prob", animated=True, striped=True,style={"height": "20px"}, color='primary'
-            )
+            ),
+              dbc.Tooltip(html.P([
+                    html.Span("Left ventricular ejection fraction less than 40% on index presentation.")]),
+                    target="lvef-pred-tooltip-target"),
         ]
     ),
     className="mb-3"
@@ -287,10 +304,7 @@ offcanvas = html.Div(
             [
                 html.P(
                     """
-                        The STEMI-ML score is a machine-learning based risk prediction score for in-hospital mortality, 
-                        intensive care unit admission and left ventricular ejection fraction less than 40% in STEMI patients. 
-                        This score has been derived from a cohort of 1863 consecutive, STEMI patients at single, tertiary Australian centre who underwent 
-                        primary percutaneous coronary intervention or rescue percutaneous coronary intervention from 2010 to 2019.
+                        The STEMI-ML score is a machine-learning based risk prediction score for in-hospital mortality, intensive care unit admission, left ventricular ejection fraction less than 40% & 1-year mortality in STEMI patients. This score has been derived from a cohort of 1863 consecutive, STEMI patients at single, tertiary Australian centre who underwent primary percutaneous coronary intervention or rescue percutaneous coronary intervention from 2010 to 2019.
                     """
                 ),
                 #html.P(
@@ -300,7 +314,7 @@ offcanvas = html.Div(
                 #),
                 html.P(
                     [
-                        "Code of the methodolody and application can be found on ", 
+                        "Code of the methodology and application can be found on ", 
                         html.A("github", href="https://github.com/harisritharan/stemi_risk_prediction")
                     ]
                 )
@@ -317,7 +331,7 @@ navbar = dbc.NavbarSimple(
     children=[
         offcanvas
     ],
-    brand="STEMI-ML Risk Score",
+    brand="STEMI-ML Score",
     color="primary",
     dark=True,
     class_name='mb-3',
