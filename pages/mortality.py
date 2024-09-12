@@ -5,11 +5,12 @@ import pandas as pd
 import dash_bootstrap_components as dbc
 import joblib
 import os
+from dash.exceptions import PreventUpdate
 
 dash.register_page(__name__, 
                    path='/mortality',
-                   title='STEMI-ML Score 1 Year Mortality',
-                   name='STEMI-ML Score 1 Year Mortality')
+                   title='STEMI-ML Score 1-Year Mortality',
+                   name='STEMI-ML Score 1-Year Mortality')
 
 df_template = pd.read_csv('dataframe_template.csv',index_col=0)
 mortality_year_pipe = joblib.load("model/elasticnet_feature_selection5_Outcome_sigmoid_calibration.pickle")
@@ -17,9 +18,9 @@ mortality_year_pipe = joblib.load("model/elasticnet_feature_selection5_Outcome_s
 
 features_to_drop = ['LVEF FINAL','lvef_abnormal_1.0']
 
-app = Dash(external_stylesheets=[dbc.themes.LUMEN,dbc.icons.FONT_AWESOME])
+#app = Dash(external_stylesheets=[dbc.themes.LUMEN,dbc.icons.FONT_AWESOME])
 
-server = app.server
+#server = app.server
 
 MIN_AGE = 18
 MAX_AGE = 100
@@ -180,7 +181,7 @@ def predict_risk(n_clicks,age,lvef,prehospital,family_hist,ptca):
     df_template.loc[first_row,'Age'] = age
     df_template.loc[first_row,'LVEF FINAL'] = lvef
 
-    if check_age_validity(age) or  check_lvef_validity(lvef):
+    if check_age_validity(age,n_clicks) or  check_lvef_validity(lvef,n_clicks):
         return (
             PROGRESS_BAR_MIN_VALUE,
             ""
@@ -226,11 +227,14 @@ def predict_risk(n_clicks,age,lvef,prehospital,family_hist,ptca):
 
 
 
-@app.callback(
+@callback(
     Output("age-input", "invalid"),
     Input("age-input", "value"),
+    Input('example-button', 'n_clicks'),
 )
-def check_age_validity(value):
+def check_age_validity(value,n_clicks):
+    if n_clicks == 0:
+        raise PreventUpdate 
     if value:
         is_invalid = value < MIN_AGE or value > MAX_AGE
         return is_invalid
@@ -238,11 +242,14 @@ def check_age_validity(value):
         return True
     return False
 
-@app.callback(
+@callback(
     Output("lvef-input", "invalid"),
     Input("lvef-input", "value"),
+    Input('example-button', 'n_clicks'),
 )
-def check_lvef_validity(value):
+def check_lvef_validity(value,n_clicks):
+    if n_clicks == 0:
+        raise PreventUpdate 
     if value:
         is_invalid = value < MIN_LVEF or value > MAX_LVEF
         return is_invalid
@@ -252,5 +259,5 @@ def check_lvef_validity(value):
 
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+#if __name__ == '__main__':
+#    app.run(debug=True)

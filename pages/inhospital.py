@@ -5,7 +5,7 @@ import pandas as pd
 import dash_bootstrap_components as dbc
 import joblib
 import os
-
+from dash.exceptions import PreventUpdate
 dash.register_page(__name__, 
                    path='/',
                    title='STEMI-ML Score',
@@ -20,9 +20,9 @@ lvef_pipe = joblib.load("model/elasticnet_feature_selection5_oversample_lvef_abn
 
 features_to_drop = ['LVEF FINAL','lvef_abnormal_1.0']
 
-app = Dash(external_stylesheets=[dbc.themes.LUMEN,dbc.icons.FONT_AWESOME])
+#app = Dash(external_stylesheets=[dbc.themes.LUMEN,dbc.icons.FONT_AWESOME])
 
-server = app.server
+#server = app.server
 
 MIN_AGE = 18
 MAX_AGE = 100
@@ -40,7 +40,7 @@ controls = dbc.Card(
                 dbc.Label("Age (years)",class_name="bold", width=5),
                 dbc.Col(
                     [dbc.Input(
-                        id='age-input', 
+                        id='age-inhos-input', 
                         type='number',
                         placeholder="Between {}-{}".format(MIN_AGE,MAX_AGE),
                         #max=MAX_AGE,
@@ -303,7 +303,7 @@ layout = html.Div(
     Output('lvef-prob', 'value'),
     Output('lvef-prob', 'label'),
     Input('example-button', 'n_clicks'),
-    State('age-input', 'value'),
+    State('age-inhos-input', 'value'),
     State('ccv-input', 'value'),
     State('hr-input', 'value'),
     State('sbp-input', 'value'),
@@ -321,7 +321,7 @@ def predict_risk(n_clicks,age,ccv,hr,sbp,smoking,timi,rentrop,prehospital,family
     df_template.loc[first_row,'Starting HR'] = hr
     df_template.loc[first_row,'Starting SBP'] = sbp
 
-    if check_age_validity(age) or  check_hr_validity(hr) or  check_sbp_validity(sbp):
+    if check_age_validity(age,n_clicks) or  check_hr_validity(hr) or  check_sbp_validity(sbp):
         return (
             PROGRESS_BAR_MIN_VALUE,
             "",
@@ -423,11 +423,14 @@ def predict_risk(n_clicks,age,ccv,hr,sbp,smoking,timi,rentrop,prehospital,family
     )
 
 
-@app.callback(
-    Output("age-input", "invalid"),
-    Input("age-input", "value"),
+@callback(
+    Output("age-inhos-input", "invalid"),
+    Input("age-inhos-input", "value"),
+    Input('example-button', 'n_clicks'),
 )
-def check_age_validity(value):
+def check_age_validity(value,n_clicks):
+    if n_clicks == 0:
+        raise PreventUpdate 
     if value:
         is_invalid = value < MIN_AGE or value > MAX_AGE
         return is_invalid
@@ -435,9 +438,9 @@ def check_age_validity(value):
         return True
     return False
 
-@app.callback(
+@callback(
     Output("hr-input", "invalid"),
-    Input("hr-input", "value"),
+    Input("hr-input", "value")
 )
 def check_hr_validity(value):
     if value:
@@ -446,9 +449,9 @@ def check_hr_validity(value):
     return False
 
 
-@app.callback(
+@callback(
     Output("sbp-input", "invalid"),
-    Input("sbp-input", "value"),
+    Input("sbp-input", "value")
 )
 def check_sbp_validity(value):
     if value:
@@ -458,5 +461,5 @@ def check_sbp_validity(value):
 
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+#if __name__ == '__main__':
+#    app.run(debug=True)
